@@ -11,11 +11,9 @@ export const search = async (input) => {
 };
 
 const searchReply = async (data) => {
-  if (data) {
-    return `言葉 : ${data.word}\n読み方 : ${data.reading}\nアクセント : ${data.pitch}\n辞書 : https://jisho.org/search/${data.word}`;
-  }
-  wordsRepository.addValuesToExistingTable("unknownWords", [data]);
-  return `cannot find the word ${data}`;
+  return data
+    ? `言葉 : ${data.word}\n読み方 : ${data.reading}\nアクセント : ${data.pitch}\n辞書 : https://jisho.org/search/${data.word}`
+    : `cannot find the word ${data}`;
 };
 
 const getData = async (input) => {
@@ -27,12 +25,16 @@ const getData = async (input) => {
   }
 
   if (kuroshiro.consistsOfHiragana(input)) {
-    const inputHi = await kuroshiro.convertHiraToKata(input);
+    const inputHi = kuroshiro.convertHiraToKata(input);
     data = await wordsRepository.getExistingSingleRow(
       "words",
       "reading",
       inputHi
     );
+
+    if (!data) {
+      wordsRepository.addValuesToExistingTable("unknownWords", [input]);
+    }
     return data;
   }
 
