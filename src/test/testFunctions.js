@@ -7,7 +7,11 @@ const logTable = (table) => {
 };
 
 const containsWord = async (table, word) => {
-  const promise = await wordsRepository.getExistingSingleRow(table, word);
+  const promise = await wordsRepository.getExistingSingleRow(
+    table,
+    "word",
+    word
+  );
   return promise
     ? console.log(promise)
     : console.log(`does not contain: ${word}`);
@@ -20,6 +24,9 @@ const logGeneratedEntries = async (file) => {
     const currData = migakiParcingService.removeSpaces(wordArr[i]);
 
     if (!migakiParcingService.isValidMigakiData(currData)) {
+      console.log(
+        `================= ${currData} is not valid migaki data! =================`
+      );
       continue;
     }
 
@@ -50,12 +57,14 @@ const logGeneratedEntries = async (file) => {
       currPitch
     );
 
-    if (!(await wordsRepository.getExistingSingleRow("words", currWord))) {
+    if (
+      !(await wordsRepository.getExistingSingleRow("words", "word", currWord))
+    ) {
       console.log(`---------------------> is added <---------------------`);
     }
   }
 };
 
 // logTable("words");
-// logGeneratedEntries("originalWordList.txt");
-// containsWord("words", "言葉");
+// logGeneratedEntries("toAddWords.txt");
+// containsWord();
