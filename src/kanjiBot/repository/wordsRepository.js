@@ -1,9 +1,9 @@
 import { createRequire } from "module";
+import { fileURLToPath } from "url";
+import path from "path";
+
 const require = createRequire(import.meta.url);
 const sqlite3 = require("sqlite3").verbose();
-
-import path from "path";
-import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -17,33 +17,6 @@ const db = new sqlite3.Database(
   }
 );
 
-export const getExistingSingleRow = (table, word) => {
-  sql = `SELECT * FROM ${table} WHERE word = ?`;
-  return new Promise((resolve) => {
-    db.get(sql, [word], (err, row) => {
-      if (err) return console.error(err.message);
-      resolve(row);
-    });
-  });
-};
-
-export const insertUnknownWord = (word) => {
-  sql = `INSERT INTO unknownWords(word) VALUES(?)`;
-  db.run(sql, [word], (err) => {
-    if (err) return console.error(err.message);
-  });
-};
-
-export const createTable = (newTable) => {
-  sql = `CREATE TABLE ${newTable}(id INTEGER PRIMARY KEY,word)`;
-  db.run(sql);
-};
-
-export const dropTable = (table) => {
-  sql = `DROP TABLE ${table}`;
-  db.run(sql);
-};
-
 export const queryData = (table) => {
   sql = `SELECT * FROM ${table}`;
   db.all(sql, [], (err, rows) => {
@@ -54,43 +27,27 @@ export const queryData = (table) => {
   });
 };
 
-export const deleteWord = (table, word) => {
-  sql = `DELETE FROM ${table} WHERE word = ?`;
-  db.get(sql, [word], (err) => {
-    if (err) return console.error(err.message);
-  });
+export const getExistingSingleRow = async (table, column, word) => {
+  sql = `SELECT * FROM ${table} WHERE ${column} = ?`;
+  return await executeGetQuery(sql, [word]);
 };
 
-export const deleteAllEntries = (table) => {
-  sql = `DELETE FROM ${table}`;
-  db.all(sql, [], (err) => {
-    if (err) return console.error(err.message);
-  });
+export const addValuesToExistingTable = (table, [insertVal]) => {
+  sql =
+    table === "words"
+      ? `INSERT INTO words(isVerb,word,reading,pitch) VALUES(?,?,?,?)`
+      : table === "unknownWords"
+      ? `INSERT INTO unknownWords(word) VALUES(?)`
+      : "invalid";
+
+  if (sql === "invalid") {
+    throw new Error(`${table} does not exist`);
+  }
+  executeRunQuery(sql, insertVal);
 };
 
-export const getWord = (table, word) => {
-  sql = `SELECT * FROM ${table} WHERE word = ?`;
-  db.get(sql, [word], (err, row) => {
-    if (err) return console.error(err.message);
-    return row
-      ? console.log(row.id, row.isVerb, row.word, row.reading, row.pitch)
-      : console.log(`cannot find the word ${word}`);
-  });
-};
-
-export const getDataByWord = (word) => {
-  const sql = `SELECT * FROM words WHERE word = ?`;
-  return executeGetQuery(sql, [word]);
-};
-
-export const getDataByReading = (word) => {
-  const sql = `SELECT * FROM words WHERE reading = ?`;
-  return executeGetQuery(sql, [word]);
-};
-
-export const addToMainWords = (isVerb, word, reading, pitch) => {
-  sql = `INSERT INTO words(isVerb,word,reading,pitch) VALUES(?,?,?,?)`;
-  db.run(sql, [isVerb, word, reading, pitch], (err) => {
+const executeRunQuery = (query, args) => {
+  db.run(query, args, (err) => {
     if (err) return console.error(err.message);
   });
 };
@@ -101,5 +58,27 @@ const executeGetQuery = (query, args) => {
       if (err) return console.error(err.message);
       resolve(row);
     });
+  });
+};
+
+const createTable = (newTable) => {
+  sql = `CREATE TABLE ${newTable}(id INTEGER PRIMARY KEY,word)`;
+  db.run(sql);
+};
+
+const dropTable = (table) => {
+  sql = `DROP TABLE ${table}`;
+  db.run(sql);
+};
+
+const deleteWord = (table, word) => {
+  sql = `DELETE FROM ${table} WHERE word = ?`;
+  executeGetQuery(sql, [word]);
+};
+
+const deleteAllEntries = (table) => {
+  sql = `DELETE FROM ${table}`;
+  db.all(sql, [], (err) => {
+    if (err) return console.error(err.message);
   });
 };
