@@ -1,21 +1,20 @@
 import * as wordsRepository from "../repository/wordsRepository.js";
 import * as kuroShiro from "./kuroshiroJpConversionService.js";
 import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-
-import path from "path";
 import { fileURLToPath } from "url";
+import path from "path";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
+const require = createRequire(import.meta.url);
 const fs = require("fs");
 
+export const spaceTest = /\s/g; // matches spaces
 const firstArgTest = / *\[[^\]]*]/; // find everything between and including []
 const secondArgTest = / *\,[^\]]*;/; // find everything between and including , ;, inside of []
 const thirdArgTest = / *\[[^\]]*;/; // find everything between and including [ ;
 const fourthArgTest = /(.+)\[[\u3040-\u309f\u30a0-\u30ff]*,(.+);(.+)](.*)/; // matches strings containing "," inside []
 const fithArgTest = / *\;[^\]]*/; // finds everything between and including ; ]
-const spaceTest = /\s/g; // matches spaces
 const hasKanjiTest = /([一-龯])/; // checks for Kanji
 
 export const hasKanji = (input) => {
@@ -81,7 +80,8 @@ export const generatePitch = (input) => {
 };
 
 export const logInformation = (isVerb, word, reading, pitch) => {
-  console.log(`\nisVerb: "${isVerb}"`);
+  console.log(`\n`);
+  console.log(`isVerb: "${isVerb}"`);
   console.log(`word: "${word}"`);
   console.log(`reading: "${reading}"`);
   console.log(`pitch: "${pitch}"`);
@@ -112,8 +112,15 @@ const addDataFromFile = async (file) => {
 
     currReading = kuroShiro.convertHiraToKata(currReading);
 
-    if (!(await wordsRepository.getExistingSingleRow("words", currWord))) {
-      wordsRepository.addToMainWords(isVerb, currWord, currReading, currPitch);
+    if (
+      !(await wordsRepository.getExistingSingleRow("words", "word", currWord))
+    ) {
+      wordsRepository.addValuesToExistingTable("words", [
+        isVerb,
+        currWord,
+        currReading,
+        currPitch,
+      ]);
     }
   }
 };
