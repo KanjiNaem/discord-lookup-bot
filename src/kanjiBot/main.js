@@ -1,7 +1,7 @@
+import * as searchService from "./service/searchService.js";
 import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-import * as lookupService from "./service/lookupService.js";
 
+const require = createRequire(import.meta.url);
 const { Client } = require("discord.js");
 const client = new Client({ intents: ["GUILDS", "GUILD_MESSAGES"] });
 const { token } = require("../../config.json");
@@ -24,9 +24,9 @@ client.on("messageCreate", async (message) => {
     message.reply("🤔");
   }
 
-  // word lookup command
-  if (command === "lookup") {
-    const response = await lookupService.lookup(args);
+  // word search command
+  if (command === "search") {
+    const response = await searchService.search(args[0]);
     message.reply(response);
   }
 });
