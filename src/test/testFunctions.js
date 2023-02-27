@@ -1,6 +1,6 @@
-import * as wordsRepository from "../kanjiBot/repository/wordsRepository.js";
-import * as migakiParcingService from "../kanjiBot/service/migakiParcingService.js";
-import * as kuroShiro from "../kanjiBot/service/kuroshiroJpConversionService.js";
+import * as wordsRepository from "../main/repository/wordsRepository.js";
+import * as migakiParcingService from "../main/service/migakiParcingService.js";
+import * as kuroShiro from "../main/service/kuroshiroJpConversionService.js";
 
 const logTable = (table) => {
   wordsRepository.queryData(table);
@@ -14,7 +14,7 @@ const containsWord = async (table, word) => {
   );
   return promise
     ? console.log(promise)
-    : console.log(`does not contain: ${word}`);
+    : console.log(`the table ${table} does not contain: ${word}`);
 };
 
 const logGeneratedEntries = async (file) => {
@@ -60,11 +60,13 @@ const logGeneratedEntries = async (file) => {
     if (
       !(await wordsRepository.getExistingSingleRow("words", "word", currWord))
     ) {
-      console.log(`---------------------> is added <---------------------`);
+      console.log(
+        `---------------------> word is added <---------------------`
+      );
     }
   }
 };
 
 // logTable("words");
 // logGeneratedEntries("toAddWords.txt");
-// containsWord();
+// containsWord("words", "変態");
