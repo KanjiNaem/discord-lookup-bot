@@ -32,7 +32,7 @@ export const getExistingSingleRow = async (table, column, word) => {
   return await executeGetQuery(sql, [word]);
 };
 
-export const addValuesToExistingTable = (table, [insertVal]) => {
+export const addValuesToExistingTable = (table, insertVal) => {
   sql =
     table === "words"
       ? `INSERT INTO words(isVerb,word,reading,pitch) VALUES(?,?,?,?)`
@@ -71,9 +71,21 @@ const dropTable = (table) => {
   db.run(sql);
 };
 
-const deleteWord = (table, word) => {
+const deleteWord = async (table, word) => {
   sql = `DELETE FROM ${table} WHERE word = ?`;
-  executeGetQuery(sql, [word]);
+  await executeGetQuery(sql, [word]);
+};
+
+const deleteIdRange = async (table, idBegin, idEnd) => {
+  sql = `DELETE FROM ${table} WHERE id = ?`;
+  if (idBegin > idEnd) {
+    throw new Error(
+      `idBegin ${idBegin} needs to be smaller or equal to idEnd ${idEnd}`
+    );
+  }
+  for (let i = idEnd - idBegin; i >= 0; i--) {
+    await executeGetQuery(sql, idBegin + i);
+  }
 };
 
 const deleteAllEntries = (table) => {

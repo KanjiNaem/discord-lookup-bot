@@ -25,11 +25,11 @@ const getData = async (input) => {
   }
 
   if (kuroshiro.consistsOfHiragana(input)) {
-    const inputHi = kuroshiro.convertHiraToKata(input);
+    const kataConverted = kuroshiro.convertHiraToKata(input);
     data = await wordsRepository.getExistingSingleRow(
       "words",
       "reading",
-      inputHi
+      kataConverted
     );
 
     if (!data) {
